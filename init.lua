@@ -1,14 +1,7 @@
--- Get mod storage
-local storage = minetest.get_mod_storage()
-
 -- Variables
-local channels = minetest.parse_json(storage:get_string("channels")) or {}
+local channels = {}
 
 -- Functions
-function save_channels()
-  storage:set_string("channels", minetest.write_json(channels))
-end
-
 function gen_formspec(default)
   if default == nil then default = "" end
 
@@ -55,12 +48,10 @@ minetest.register_node("transmitters:sender", {
     action_on = function (pos)
       local meta = minetest.get_meta(pos)
       channels[meta:get_string("channel")] = true
-      save_channels()
     end,
     action_off = function (pos)
       local meta = minetest.get_meta(pos)
       channels[meta:get_string("channel")] = false
-      save_channels()
     end
   }}
 })
@@ -136,6 +127,7 @@ minetest.register_node("transmitters:receiver_on", {
     timer:start(0.1)
   end,
   groups = {cracky = 3},
+  drop = "transmitters:receiver_off",
   on_receive_fields = function (pos, formname, fields, player)
     if fields.quit then return end
 
