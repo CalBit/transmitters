@@ -1,3 +1,6 @@
+-- Get Minetest translation
+local S = minetest.get_translator("transmitters")
+
 -- Variables
 local channels = {}
 
@@ -8,15 +11,15 @@ function gen_formspec(default)
   local formspec = {
     "formspec_version[4]",
     "size[6,4]",
-    "field[1,1;4,0.5;channel;Channel;" .. default .. "]",
-    "button[1,2.5;2,0.5;submit;Submit]"
+    "field[1,1;4,0.5;channel;" .. S("Channel") .. ";" .. default .. "]",
+    "button[1,2.5;2,0.5;submit;" .. S("Submit") .. "]"
   }
   return table.concat(formspec, "");
 end
 
 -- Nodes
 minetest.register_node("transmitters:sender", {
-  description = "Sender",
+  description = S("Sender"),
   tiles = {
     "default_steel_block.png^transmitters_sender.png",
     "default_steel_block.png",
@@ -41,7 +44,7 @@ minetest.register_node("transmitters:sender", {
     -- Reset default value for formspec
     meta:set_string("formspec", gen_formspec(fields.channel))
 
-    minetest.chat_send_player(player:get_player_name(), "Transmitters: Channel '" .. fields.channel .. "' has been set.")
+    minetest.chat_send_player(player:get_player_name(), S("Transmitters: Channel '") .. fields.channel .. S("' has been set."))
   end,
   mesecons = {effector = {
     rules = mesecon.rules.default,
@@ -57,7 +60,7 @@ minetest.register_node("transmitters:sender", {
 })
 
 minetest.register_node("transmitters:receiver_off", {
-  description = "Receiver",
+  description = S("Receiver"),
   tiles = {
     "default_steel_block.png^transmitters_receiver.png",
     "default_steel_block.png",
@@ -85,7 +88,7 @@ minetest.register_node("transmitters:receiver_off", {
     -- Reset default value for formspec
     meta:set_string("formspec", gen_formspec(fields.channel))
 
-    minetest.chat_send_player(player:get_player_name(), "Transmitters: Channel '" .. fields.channel .. "' has been set.")
+    minetest.chat_send_player(player:get_player_name(), S("Transmitters: Channel '") .. fields.channel .. S("' has been set."))
   end,
   on_timer = function (pos)
     local meta = minetest.get_meta(pos)
@@ -94,6 +97,8 @@ minetest.register_node("transmitters:receiver_off", {
     if channels[meta:get_string("channel")] then
       minetest.swap_node(pos, {name = "transmitters:receiver_on"})
       mesecon.receptor_on(pos, mesecon.rules.default)
+
+      -- Initalize swapped node
       local node = minetest.registered_nodes[minetest.get_node(pos).name]
       if node.after_place_node then
         node.after_place_node(pos)
@@ -139,7 +144,7 @@ minetest.register_node("transmitters:receiver_on", {
     -- Reset default value for formspec
     meta:set_string("formspec", gen_formspec(fields.channel))
 
-    minetest.chat_send_player(player:get_player_name(), "Transmitters: Channel '" .. fields.channel .. "' has been set.")
+    minetest.chat_send_player(player:get_player_name(), S("Transmitters: Channel '") .. fields.channel .. S("' has been set."))
   end,
   on_timer = function (pos)
     local meta = minetest.get_meta(pos)
@@ -148,6 +153,8 @@ minetest.register_node("transmitters:receiver_on", {
     if not channels[meta:get_string("channel")] then
       minetest.swap_node(pos, {name = "transmitters:receiver_off"})
       mesecon.receptor_off(pos, mesecon.rules.default)
+
+      -- Initalize swapped node
       local node = minetest.registered_nodes[minetest.get_node(pos).name]
       if node.after_place_node then
         node.after_place_node(pos)
