@@ -78,7 +78,10 @@ minetest.register_node("transmitters:receiver_off", {
   groups = {cracky = 3},
   after_place_node = function (pos)
     local meta = minetest.get_meta(pos)
-    meta:set_string("formspec", gen_formspec())
+    meta:set_string("formspec", gen_formspec(meta:get_string("channel")))
+
+    local timer = minetest.get_node_timer(pos)
+    timer:start(0.1)
   end,
   on_receive_fields = function (pos, formname, fields, player)
     if fields.quit then return end
@@ -92,6 +95,23 @@ minetest.register_node("transmitters:receiver_off", {
     meta:set_string("formspec", gen_formspec(fields.channel))
 
     minetest.chat_send_player(player:get_player_name(), "Transmitters: Channel '" .. fields.channel .. "' has been set.")
+  end,
+  on_timer = function (pos)
+    local meta = minetest.get_meta(pos)
+    if meta:get_string("channel") == nil then return true end
+
+    if channels[meta:get_string("channel")] then
+      minetest.swap_node(pos, {name = "transmitters:receiver_on"})
+      mesecon.receptor_on(pos, mesecon.rules.default)
+      local node = minetest.registered_nodes[minetest.get_node(pos).name]
+      if node.after_place_node then
+        node.after_place_node(pos)
+      end
+      return false
+    end
+
+    -- Restart timer
+    return true
   end,
   mesecons = {receptor = {
     state = mesecon.state.off,
@@ -110,12 +130,10 @@ minetest.register_node("transmitters:receiver_on", {
   },
   after_place_node = function (pos)
     local meta = minetest.get_meta(pos)
-    meta:set_string("formspec",
-      "formspec_version[4]" ..
-      "size[6,4]" ..
-      "field[1,1;4,0.5;channel;Channel;]" ..
-      "button[1,2.5;2,0.5;submit;Submit]"
-    )
+    meta:set_string("formspec", gen_formspec(meta:get_string("channel")))
+
+    local timer = minetest.get_node_timer(pos)
+    timer:start(0.1)
   end,
   groups = {cracky = 3},
   on_receive_fields = function (pos, formname, fields, player)
@@ -130,6 +148,23 @@ minetest.register_node("transmitters:receiver_on", {
     meta:set_string("formspec", gen_formspec(fields.channel))
 
     minetest.chat_send_player(player:get_player_name(), "Transmitters: Channel '" .. fields.channel .. "' has been set.")
+  end,
+  on_timer = function (pos)
+    local meta = minetest.get_meta(pos)
+    if meta:get_string("channel") == nil then return true end
+
+    if not channels[meta:get_string("channel")] then
+      minetest.swap_node(pos, {name = "transmitters:receiver_off"})
+      mesecon.receptor_off(pos, mesecon.rules.default)
+      local node = minetest.registered_nodes[minetest.get_node(pos).name]
+      if node.after_place_node then
+        node.after_place_node(pos)
+      end
+      return false
+    end
+
+    -- Restart timer
+    return true
   end,
   mesecons = {receptor = {
     state = mesecon.state.on,
