@@ -1,0 +1,7 @@
+# textdomain: transmitters
+Channel=Canal
+Submit=Vale
+Sender=Remitente
+Receiver=Receptor
+Transmitters: Channel '=Remitentes: Canal '
+' has been set.=' se ha establecido.
