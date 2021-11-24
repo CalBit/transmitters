@@ -36,12 +36,12 @@ end
 minetest.register_node("transmitters:sender", {
   description = S("Sender"),
   tiles = {
+    "default_steel_block.png",
+    "default_steel_block.png",
     "default_steel_block.png^transmitters_sender.png",
-    "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png"
+    "default_steel_block.png^transmitters_sender.png",
+    "default_steel_block.png^transmitters_sender.png",
+    "default_steel_block.png^transmitters_sender.png"
   },
   groups = {cracky = 3},
   after_place_node = function (pos)
@@ -83,13 +83,11 @@ minetest.register_node("transmitters:sender", {
   mesecons = {effector = {
     rules = mesecon.rules.default,
     action_on = function (pos)
-      minetest.chat_send_all("On")
       local meta = minetest.get_meta(pos)
       set_channel(meta:get_string("channel"), 1)
       meta:set_int("enabled", 1)
     end,
     action_off = function (pos)
-      minetest.chat_send_all("Off")
       local meta = minetest.get_meta(pos)
       set_channel(meta:get_string("channel"), -1)
       meta:set_int("enabled", 0)
@@ -100,12 +98,12 @@ minetest.register_node("transmitters:sender", {
 minetest.register_node("transmitters:receiver_off", {
   description = S("Receiver"),
   tiles = {
-    "default_steel_block.png^transmitters_receiver.png",
     "default_steel_block.png",
     "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png"
+    "default_steel_block.png^transmitters_receiver_off.png",
+    "default_steel_block.png^transmitters_receiver_off.png",
+    "default_steel_block.png^transmitters_receiver_off.png",
+    "default_steel_block.png^transmitters_receiver_off.png"
   },
   groups = {cracky = 3},
   after_place_node = function (pos)
@@ -157,12 +155,12 @@ minetest.register_node("transmitters:receiver_off", {
 
 minetest.register_node("transmitters:receiver_on", {
   tiles = {
-    "default_steel_block.png^transmitters_receiver.png",
     "default_steel_block.png",
     "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png",
-    "default_steel_block.png"
+    "default_steel_block.png^transmitters_receiver_on.png",
+    "default_steel_block.png^transmitters_receiver_on.png",
+    "default_steel_block.png^transmitters_receiver_on.png",
+    "default_steel_block.png^transmitters_receiver_on.png"
   },
   after_place_node = function (pos)
     local meta = minetest.get_meta(pos)
