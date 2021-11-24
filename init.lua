@@ -2,7 +2,11 @@
 local S = minetest.get_translator("transmitters")
 
 -- Variables
-local channels = {}
+local storage = minetest.get_mod_storage()
+if storage:get_string("channels") == "" then
+  storage:set_string("channels", minetest.write_json({}))
+end
+local channels = minetest.parse_json(storage:get_string("channels")) or {}
 
 -- Functions
 function gen_formspec(default)
@@ -15,6 +19,17 @@ function gen_formspec(default)
     "button[1,2.5;2,0.5;submit;" .. S("Submit") .. "]"
   }
   return table.concat(formspec, "");
+end
+
+function save_channels()
+  storage:set_string("channels", minetest.write_json(channels))
+end
+
+function set_channel(chan, val)
+  if channels[chan] == nil then channels[chan] = 0 end
+  channels[chan] = channels[chan] + val
+  if channels[chan] < 0 then channels[chan] = 0 end
+  save_channels()
 end
 
 -- Nodes
@@ -32,14 +47,33 @@ minetest.register_node("transmitters:sender", {
   after_place_node = function (pos)
     local meta = minetest.get_meta(pos)
     meta:set_string("formspec", gen_formspec())
+    meta:set_int("enabled", 0)
+  end,
+  on_destruct = function (pos)
+    local meta = minetest.get_meta(pos)
+
+    -- Turn off channel if necessary
+    if meta:get_int("enabled") == 1 then
+      set_channel(meta:get_string("channel"), -1)
+    end
   end,
   on_receive_fields = function (pos, formname, fields, player)
     if fields.quit then return end
 
     local meta = minetest.get_meta(pos)
 
+    -- Turn off channel if necessary
+    if meta:get_int("enabled") == 1 then
+      set_channel(meta:get_string("channel"), -1)
+    end
+
     -- Save channel
     meta:set_string("channel", fields.channel)
+
+    -- Turn on channel if necessary
+    if meta:get_int("enabled") == 1 then
+      set_channel(meta:get_string("channel"), 1)
+    end
 
     -- Reset default value for formspec
     meta:set_string("formspec", gen_formspec(fields.channel))
@@ -49,12 +83,16 @@ minetest.register_node("transmitters:sender", {
   mesecons = {effector = {
     rules = mesecon.rules.default,
     action_on = function (pos)
+      minetest.chat_send_all("On")
       local meta = minetest.get_meta(pos)
-      channels[meta:get_string("channel")] = true
+      set_channel(meta:get_string("channel"), 1)
+      meta:set_int("enabled", 1)
     end,
     action_off = function (pos)
+      minetest.chat_send_all("Off")
       local meta = minetest.get_meta(pos)
-      channels[meta:get_string("channel")] = false
+      set_channel(meta:get_string("channel"), -1)
+      meta:set_int("enabled", 0)
     end
   }}
 })
@@ -94,7 +132,9 @@ minetest.register_node("transmitters:receiver_off", {
     local meta = minetest.get_meta(pos)
     if meta:get_string("channel") == nil then return true end
 
-    if channels[meta:get_string("channel")] then
+    -- Make sure not to get nil error
+    if channels[meta:get_string("channel")] == nil then channels[meta:get_string("channel")] = 0 end
+    if channels[meta:get_string("channel")] > 0 then
       minetest.swap_node(pos, {name = "transmitters:receiver_on"})
       mesecon.receptor_on(pos, mesecon.rules.default)
 
@@ -150,7 +190,9 @@ minetest.register_node("transmitters:receiver_on", {
     local meta = minetest.get_meta(pos)
     if meta:get_string("channel") == nil then return true end
 
-    if not channels[meta:get_string("channel")] then
+    -- Make sure not to get nil error
+    if channels[meta:get_string("channel")] == nil then channels[meta:get_string("channel")] = 0 end
+    if channels[meta:get_string("channel")] < 1 then
       minetest.swap_node(pos, {name = "transmitters:receiver_off"})
       mesecon.receptor_off(pos, mesecon.rules.default)
 
@@ -169,4 +211,16 @@ minetest.register_node("transmitters:receiver_on", {
     state = mesecon.state.on,
     rules = mesecon.rules.default
   }}
+})
+
+-- Register chat commands
+minetest.register_chatcommand("resetchannels", {
+  description = "Resets all channels to nil. (Use if channels seem to be acting up)",
+  privs = {
+    server = true
+  },
+  func = function ()
+    channels = {}
+    save_channels()
+  end
 })
