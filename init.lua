@@ -211,6 +211,43 @@ minetest.register_node("transmitters:receiver_on", {
   }}
 })
 
+-- Register crafts
+minetest.register_craft({
+  output = "transmitters:sender",
+  recipe = {
+    {"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"},
+		{"default:steel_ingot", "mesecons_luacontroller:luacontroller0000", "group:mesecon_conductor_craftable"},
+		{"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"}
+  }
+})
+
+minetest.register_craft({
+  output = "transmitters:sender",
+  recipe = {
+    {"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"},
+		{"default:steel_ingot", "mesecons_microcontroller:microcontroller0000", "group:mesecon_conductor_craftable"},
+		{"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"}
+  }
+})
+
+minetest.register_craft({
+  output = "transmitters:receiver_off",
+  recipe = {
+    {"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"},
+		{"group:mesecon_conductor_craftable", "mesecons_luacontroller:luacontroller0000", "default:steel_ingot"},
+		{"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"}
+  }
+})
+
+minetest.register_craft({
+  output = "transmitters:receiver_off",
+  recipe = {
+    {"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"},
+		{"group:mesecon_conductor_craftable", "mesecons_microcontroller:microcontroller0000", "default:steel_ingot"},
+		{"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"}
+  }
+})
+
 -- Register chat commands
 minetest.register_chatcommand("resetchannels", {
   description = "Resets all channels to nil. (Use if channels seem to be acting up)",
